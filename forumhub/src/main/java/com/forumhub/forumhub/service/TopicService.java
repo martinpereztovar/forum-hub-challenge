@@ -4,6 +4,8 @@ import com.forumhub.forumhub.domain.Topic;
 import com.forumhub.forumhub.domain.TopicStatus;
 import com.forumhub.forumhub.dto.CreateTopicRequest;
 import com.forumhub.forumhub.dto.TopicResponse;
+import com.forumhub.forumhub.dto.UpdateTopicRequest;
+import com.forumhub.forumhub.exception.TopicNotFoundException;
 import com.forumhub.forumhub.repository.CourseRepository;
 import com.forumhub.forumhub.repository.TopicRepository;
 import com.forumhub.forumhub.repository.UserRepository;
@@ -75,6 +77,73 @@ public class TopicService {
                         t.getAuthor().getId(),
                         t.getCourse().getId()
                 ));
+    }
+
+    public TopicResponse getById(Long id) {
+        var topic = topicRepository.findById(id)
+                .orElseThrow(() -> new TopicNotFoundException(id));
+
+        return new TopicResponse(
+                topic.getId(),
+                topic.getTitle(),
+                topic.getMessage(),
+                topic.getCreatedAt(),
+                topic.getStatus().name(),
+                topic.getAuthor().getId(),
+                topic.getCourse().getId()
+        );
+    }
+
+    public TopicResponse update(Long id, UpdateTopicRequest req) {
+
+        var topic = topicRepository.findById(id)
+                .orElseThrow(() -> new TopicNotFoundException(id));
+
+        String normalizedTitle = req.title().trim();
+        String normalizedMessage = req.message().trim();
+
+        // Prevent duplicates (same rule as create)
+        boolean duplicateExists = topicRepository.existsByTitleAndMessage(normalizedTitle, normalizedMessage);
+
+        if (duplicateExists) {
+            boolean sameAsCurrent =
+                    normalizedTitle.equals(topic.getTitle()) &&
+                            normalizedMessage.equals(topic.getMessage());
+
+            if (!sameAsCurrent) {
+                throw new IllegalArgumentException("Topic already exists with the same title and message");
+            }
+        }
+
+        var author = userRepository.findById(req.authorId())
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+
+        var course = courseRepository.findById(req.courseId())
+                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+        topic.setTitle(normalizedTitle);
+        topic.setMessage(normalizedMessage);
+        topic.setAuthor(author);
+        topic.setCourse(course);
+
+        var saved = topicRepository.save(topic);
+
+        return new TopicResponse(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getMessage(),
+                saved.getCreatedAt(),
+                saved.getStatus().name(),
+                saved.getAuthor().getId(),
+                saved.getCourse().getId()
+        );
+    }
+
+    public void delete(Long id) {
+        var topic = topicRepository.findById(id)
+                .orElseThrow(() -> new TopicNotFoundException(id));
+
+        topicRepository.delete(topic);
     }
 
 }

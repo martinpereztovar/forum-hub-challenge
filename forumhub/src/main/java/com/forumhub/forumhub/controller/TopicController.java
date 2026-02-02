@@ -2,6 +2,7 @@ package com.forumhub.forumhub.controller;
 
 import com.forumhub.forumhub.dto.CreateTopicRequest;
 import com.forumhub.forumhub.dto.TopicResponse;
+import com.forumhub.forumhub.dto.UpdateTopicRequest;
 import com.forumhub.forumhub.service.TopicService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -32,4 +33,25 @@ public class TopicController {
     ) {
         return topicService.listAll(pageable);
     }
+
+    @GetMapping("/{id}")
+    public TopicResponse getById(@PathVariable Long id) {
+        return topicService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public TopicResponse update(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateTopicRequest request
+    ) {
+        return topicService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        topicService.delete(id);
+    }
+
+
 }
