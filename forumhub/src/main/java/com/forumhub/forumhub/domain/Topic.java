@@ -33,7 +33,7 @@ public class Topic {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    protected Topic() {}
+    public Topic() {}
 
     public Long getId() {
         return id;
