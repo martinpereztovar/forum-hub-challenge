@@ -16,3 +16,12 @@ spring:
 
   flyway:
     enabled: true
+
+security:
+  jwt:
+    secret: "9b2c1e0a0d5f4a1e9c3b7d2f6a8c1e0a9b2c1e0a0d5f4a1e9c3b7d2f6a8c1e0a"
+    expiration-minutes: 120
+
+logging:
+  level:
+    org.springframework.security: DEBUG
